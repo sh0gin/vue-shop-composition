@@ -4,20 +4,20 @@
 
     <div class="card-body">
       <div class="d-flex justify-content-between align-items-center mb-2">
-        <span class="product-category"> {{ product.category }} </span>
+        <span class="product-category"> {{ props.product.category }} </span>
         <span class="product-quantity" :class="getQuantityClass(product.quantity)">
-          {{ product.quantity }} в наличии
+          {{ props.product.quantity }} в наличии
         </span>
       </div>
 
-      <h5 class="card-title">{{ product.name }}</h5>
+      <h5 class="card-title">{{ props.product.name }}</h5>
 
       <div class="d-flex justify-content-between align-items-center mt-3">
-        <span class="product-price">{{ product.price.toLocaleString() }} ₽</span>
+        <span class="product-price">{{ props.product.price.toLocaleString() }} ₽</span>
         <button
           class="btn btn-add-to-cart"
-          :disabled="product.quantity == 0"
-          @click="ProductInBasket(product.id)"
+          :disabled="props.product.quantity == 0"
+          @click="ProductInBasket(props.product.id)"
         >
           <i class="fas fa-shopping-cart me-2"></i>
         </button>
@@ -26,37 +26,77 @@
   </div>
 </template>
 
-<script>
+<script setup>
+import { onMounted, inject } from "vue";
+import { useRouter } from "vue-router";
+const props = defineProps({
+  product: Object,
+});
+const router = useRouter();
+const activeToken = inject("activeToken");
+const apiUrl = inject("apiUrl");
+
+function getQuantityClass(quantity) {
+  if (quantity > 100) return "quantity-high";
+  if (quantity > 10) return "quantity-medium";
+  return "quantity-low";
+}
+
+async function ProductInBasket(product_id) {
+  if (activeToken.value) {
+    const response = await fetch(
+      `${apiUrl.value}api/product/add-one-product/${product_id}`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${activeToken.value}`,
+        },
+      }
+    );
+    if (response.ok) {
+      props.product.quantity -= 1;
+    } else {
+      console.log(response);
+    }
+  } else {
+    router.push("/login"); // и должно быть предуреждение о том, что пользователь незарегистророван
+  }
+}
+
+onMounted(() => {
+  console.log(props.product);
+});
 // import { RouterLink } from "vue-router";
 
-export default {
-  methods: {
-    getQuantityClass(quantity) {
-      if (quantity > 100) return "quantity-high";
-      if (quantity > 10) return "quantity-medium";
-      return "quantity-low";
-    },
-    async ProductInBasket(product_id) {
-      if (this.$config.activeToken) {
-        const response = await fetch(
-          `${this.$config.apiUrl}api/product/add-one-product/${product_id}`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${this.$config.activeToken}`,
-            },
-          }
-        );
-        let result = await response.json();
-        this.product.quantity -= 1;
-      } else {
-        this.$router.push("/login"); // и должно быть предуреждение о том, что пользователь незарегистророван
-      }
-    },
-  },
-  props: ["product"],
-};
+// export default {
+//   methods: {
+//     getQuantityClass(quantity) {
+//       if (quantity > 100) return "quantity-high";
+//       if (quantity > 10) return "quantity-medium";
+//       return "quantity-low";
+//     },
+//     async ProductInBasket(product_id) {
+//       if (this.$config.activeToken) {
+//         const response = await fetch(
+//           `${this.$config.apiUrl}api/product/add-one-product/${product_id}`,
+//           {
+//             method: "POST",
+//             headers: {
+//               "Content-Type": "application/json",
+//               Authorization: `Bearer ${this.$config.activeToken}`,
+//             },
+//           }
+//         );
+//         let result = await response.json();
+//         this.product.quantity -= 1;
+//       } else {
+//         this.$router.push("/login"); // и должно быть предуреждение о том, что пользователь незарегистророван
+//       }
+//     },
+//   },
+//   props: ["product"],
+// };
 </script>
 
 <style>

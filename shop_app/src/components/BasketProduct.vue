@@ -1,103 +1,108 @@
 <template>
   <div class="cart-item d-flex" :class="{ 'd-none': active }">
-    <img :src="product.file_url[0]" class="product-image me-3" alt="Товар" />
+    <img :src="props.product.file_url[0]" class="product-image me-3" alt="Товар" />
     <div class="flex-grow-1">
-      <h5 class="mb-1">{{ product.product_name }}</h5>
+      <h5 class="mb-1">{{ props.product.product_name }}</h5>
       <div class="d-flex justify-content-between align-items-center">
         <div class="d-flex align-items-center">
           <button
             class="btn btn-sm quantity-btn btn-outline-primary"
-            @click="minus(product.id)"
+            @click="minus(props.product.id)"
           >
             -
           </button>
-          <span class="mx-3 fw-bold">{{ product.count }}</span>
+          <span class="mx-3 fw-bold">{{ props.product.count.toLocaleString() }}</span>
           <button
             class="btn btn-sm quantity-btn btn-outline-primary"
-            @click="plus(product.id)"
+            @click="plus(props.product.id)"
           >
             +
           </button>
         </div>
         <div>
-          <span class="fw-bold fs-5">{{ product.price_for_this_product }} ₽</span>
-          <small class="text t d-block">{{ product.price_for_once }} за шт.</small>
+          <span class="fw-bold fs-5"
+            >{{ props.product.price_for_this_product.toLocaleString() }} ₽</span
+          >
+          <small class="text t d-block"
+            >{{ props.product.price_for_once.toLocaleString() }} за шт.</small
+          >
         </div>
       </div>
     </div>
-    <button class="btn btn-link text-danger ms-3" @click="deleteAll(product.id)">
+    <button class="btn btn-link text-danger ms-3" @click="deleteAll(props.product.id)">
       <i class="fas fa-trash"></i>
     </button>
   </div>
 </template>
 
-<script>
-export default {
-  props: ["product"],
-  data() {
-    return {
-      active: false,
-    };
-  },
-  methods: {
-    async minus(product_id) {
-      const response = await fetch(
-        `${this.$config.apiUrl}api/product/del-one-product/${product_id}`,
-        {
-          method: "DELETE",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${this.$config.activeToken}`,
-          },
-        }
-      );
-      if (response.ok) {
-        this.product.count -= 1;
-        if (this.product.count == 0) {
-          this.active = true;
-        }
-        this.product.price_for_this_product -= this.product.price_for_once;
-        this.$emit("minus", this.product.price_for_once);
-      }
-    },
-    async plus(product_id) {
-      const response = await fetch(
-        `${this.$config.apiUrl}api/product/add-one-product/${product_id}`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${this.$config.activeToken}`,
-          },
-        }
-      );
-      if (response.ok) {
-        this.product.count += 1;
+<script setup>
+import { ref, inject } from "vue";
+const activeToken = inject("activeToken");
+const apiUrl = inject("apiUrl");
 
-        this.product.price_for_this_product += this.product.price_for_once;
-        this.$emit("plus", this.product.price_for_once);
-      } else {
-        this.$emit("error");
-      }
-    },
-    async deleteAll(product_id) {
-      const response = await fetch(
-        `${this.$config.apiUrl}api/product/del-all-products/${product_id}`,
-        {
-          method: "DELETE",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${this.$config.activeToken}`,
-          },
-        }
-      );
-      this.active = true;
-      if (response.ok) {
-        this.$emit("delete", this.product.price_for_this_product, this.product.count);
-      }
-    },
-  },
-};
+const props = defineProps({
+  product: Object,
+});
+const emit = defineEmits(["minus", "plus", "error"]);
+let active = ref(false);
+
+async function minus(product_id) {
+  const response = await fetch(
+    `${apiUrl.value}api/product/del-one-product/${product_id}`,
+    {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${activeToken.value}`,
+      },
+    }
+  );
+  if (response.ok) {
+    props.product.count -= 1;
+    if (props.product.count == 0) {
+      active.value = true;
+    }
+    props.product.price_for_this_product -= props.product.price_for_once;
+    emit("minus", props.product.price_for_once);
+  }
+}
+async function plus(product_id) {
+  const response = await fetch(
+    `${apiUrl.value}api/product/add-one-product/${product_id}`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${activeToken.value}`,
+      },
+    }
+  );
+  if (response.ok) {
+    props.product.count += 1;
+
+    props.product.price_for_this_product += props.product.price_for_once;
+    emit("plus", props.product.price_for_once);
+  } else {
+    emit("error");
+  }
+}
+
+async function deleteAll(product_id) {
+  const response = await fetch(
+    `${apiUrl.value}api/product/del-all-products/${product_id}`,
+    {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${activeToken.value}`,
+      },
+    }
+  );
+  active.value = true;
+  if (response.ok) {
+    emit("delete", props.product.price_for_this_product, props.product.count);
+  }
+}
 </script>
 
 <style>

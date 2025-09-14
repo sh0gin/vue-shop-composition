@@ -1,5 +1,5 @@
 <template>
-  <div class="orders-container my-comp" v-if="this.$config.activeToken">
+  <div class="orders-container my-comp" v-if="activeToken">
     <div class="row">
       <!-- Левая колонка - Меню истории заказов -->
       <div class="col-lg-3">
@@ -86,6 +86,7 @@
               :status="orders.status"
               :data="orders.data_of_creation"
               :image="orders.image"
+              :message="orders.message"
             ></cart-orders>
           </div>
 
@@ -160,48 +161,42 @@
   </div>
 </template>
 
-<script>
+<script setup>
 import CartOrders from "@/components/CartOrders.vue";
+import { inject, ref, onMounted } from "vue";
 
-export default {
-  name: "UserOrders",
-  data() {
-    return {
-      order: false,
-      loader: true,
-      status: null,
-      active: 4,
-    };
-  },
-  methods: {
-    async load(status) {
-      this.order = [];
-      this.active = status;
-      const raw = JSON.stringify({
-        status_id: status,
-      });
-      const response = await fetch(`${this.$config.apiUrl}api/orders/get-orders`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${this.$config.activeToken}`,
-        },
-        body: raw,
-      });
+const apiUrl = inject("apiUrl");
+const activeToken = inject("activeToken");
 
-      this.order = await response.json();
-      this.status = this.order.totalStatus;
-      this.order = this.order.data;
+let order = ref(false);
+let loader = ref(false);
+let status = ref(false);
+let active = ref(4);
+
+async function load(status_active) {
+  order.value = [];
+  active.value = status_active;
+  const raw = JSON.stringify({
+    status_id: status_active,
+  });
+  const response = await fetch(`${apiUrl.value}api/orders/get-orders`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${activeToken.value}`,
     },
-  },
-  components: {
-    CartOrders,
-  },
-  async created() {
-    await this.load(4);
-    this.loader = false;
-  },
-};
+    body: raw,
+  });
+
+  order.value = await response.json();
+  status.value = order.value.totalStatus;
+  order = order.value.data;
+}
+
+onMounted(async () => {
+  await load(4);
+  loader.value = false;
+});
 </script>
 
 <style scoped>

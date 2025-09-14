@@ -21,7 +21,7 @@
             </div>
             <div class="d-flex justify-content-between mb-2">
               <span>Баланс:</span>
-              <strong>{{ userInfo.balance }}</strong>
+              <strong>{{ userInfo.balance.toLocaleString() }}</strong>
             </div>
             <div class="d-flex justify-content-between mb-2">
               <span>Роль:</span>
@@ -50,8 +50,8 @@
           </div>
 
           <!-- Элементы корзины -->
-          <div v-if="products.value">
-            <div class="cart-items" v-for="item in products.value.data.basket">
+          <div v-if="products">
+            <div class="cart-items" v-for="item in products.data.basket">
               <basket-product
                 :product="item"
                 @minus="minus"
@@ -64,8 +64,8 @@
             <div class="summary-card p-4 mt-4">
               <h5 class="text-white mb-4">Итог заказа</h5>
               <div class="d-flex justify-content-between mb-2">
-                <span>Товары ({{ products.data.totalCount }}):</span>
-                <strong>{{ products.data.totalSum }} ₽</strong>
+                <span>Товары ({{ products.data.totalCount.toLocaleString() }}):</span>
+                <strong>{{ products.data.totalSum.toLocaleString() }} ₽</strong>
               </div>
               <!-- <div class="d-flex justify-content-between mb-2">
                 <span>Скидка:</span>
@@ -78,7 +78,9 @@
               <hr class="bg-light" />
               <div class="d-flex justify-content-between mb-3">
                 <span class="fs-5">Итого:</span>
-                <strong class="fs-4">{{ products.data.totalSum }} ₽</strong>
+                <strong class="fs-4"
+                  >{{ products.data.totalSum.toLocaleString() }} ₽</strong
+                >
               </div>
               <button class="btn btn-checkout w-100 text-white" @click="order">
                 <i class="fas fa-lock me-2 conf-my"></i>Оформить заказ
@@ -180,8 +182,8 @@ async function order() {
   if (response.ok) {
     title = "Заказ создан";
     type = "success";
-    userInfo.balance -= products.data.totalSum;
-    products = null;
+    userInfo.balance -= products.value.data.totalSum;
+    products.value = null;
   } else if (response.status === 403) {
     title = "Чтобы оформить заказ, в корзине должны быть товары";
     type = "error";
@@ -195,18 +197,18 @@ function amount_error() {
   type = "error";
 }
 function minus(price_for_once_product) {
-  products.data.totalSum -= price_for_once_product;
-  products.data.totalCount -= 1;
+  products.value.data.totalSum -= price_for_once_product;
+  products.value.data.totalCount -= 1;
   title = false;
 }
 function deleteAll(price_for_this_product, count) {
-  products.data.totalSum -= price_for_this_product;
-  products.data.totalCount -= count;
+  products.value.data.totalSum -= price_for_this_product;
+  products.value.data.totalCount -= count;
   title = false;
 }
 function plus(price_for_once_product) {
-  products.data.totalSum += price_for_once_product;
-  products.data.totalCount += 1;
+  products.value.data.totalSum += price_for_once_product;
+  products.value.data.totalCount += 1;
   title = false;
 }
 async function load() {
@@ -233,7 +235,6 @@ async function load() {
 
 onMounted(async () => {
   await load();
-  console.log(userInfo.value, activeToken.value, products.value, !loader.value);
 });
 </script>
 

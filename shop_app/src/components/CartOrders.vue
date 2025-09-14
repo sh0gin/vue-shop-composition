@@ -10,8 +10,15 @@
       </div>
     </div>
 
+    <div class="cancel-reason" v-if="message">
+      <div class="cancel-reason-content">
+        <i class="fas fa-info-circle me-2"></i>
+        <strong>Причина отмены:</strong> {{ message }}
+      </div>
+    </div>
+
     <div class="order-content">
-      <div class="order-items" v-for="items in products_in_order">
+      <div class="order-items" v-for="items in props.products_in_order">
         <cart-product-order
           :name="items.product"
           :count="items.count"
@@ -23,7 +30,7 @@
       <div class="order-summary">
         <div class="summary-row">
           <span>Товары:</span>
-          <strong>{{ general_price.toLocaleString() }} ₽</strong>
+          <strong>{{ props.general_price }} ₽</strong>
         </div>
         <!-- <div class="summary-row">
           <span>Доставка:</span>
@@ -31,7 +38,7 @@
         </div> -->
         <div class="summary-row total">
           <span>Итого:</span>
-          <strong class="total-price">{{ general_price.toLocaleString() }} ₽</strong>
+          <strong class="total-price">{{ props.general_price }} ₽</strong>
         </div>
       </div>
     </div>
@@ -47,30 +54,71 @@
   </div>
 </template>
 
-<script>
+<script setup>
+import { ref, onMounted } from "vue";
 import CartProductOrder from "@/components/CartProductOrder.vue";
+let status_active = ref("");
+const props = defineProps({
+  code: String,
+  id: Number,
+  general_price: Number,
+  status: String,
+  data: String,
+  products_in_order: Number,
+  image: String,
+  message: String,
+});
 
-export default {
-  data() {
-    return {
-      status_active: "",
-    };
-  },
-  props: ["code", "id", "general_price", "status", "data", "products_in_order", "image"],
-  components: { CartProductOrder },
-  mounted() {
-    if (this.status == "Отмена") {
-      this.status_active = "status-cancelled";
-    } else if (this.status == "Заказ в обработке") {
-      this.status_active = "status-processing";
-    } else if (this.status == "Готов к получению") {
-      this.status_active = "status-delivered";
-    }
-  },
-};
+onMounted(() => {
+  if (props.status == "Заказ в обработке") {
+    status_active.value = "status-processing";
+  } else if (props.status == "Готов к получению") {
+    status_active.value = "status-delivered";
+  } else if (props.status == "Отменён") {
+    status_active.value = "status-cancelled";
+  }
+  console.log(props.status, status_active.value, props.code);
+});
+
+// export default {
+//   data() {
+//     return {
+//       status_active: "",
+//     };
+//   },
+//   props: ["code", "id", "general_price", "status", "data", "products_in_order", "image"],
+//   components: { CartProductOrder },
+//   mounted() {
+//     if (this.status == "Отмена") {
+//       this.status_active = "status-cancelled";
+//     } else if (this.status == "Заказ в обработке") {
+//       this.status_active = "status-processing";
+//     } else if (this.status == "Готов к получению") {
+//       this.status_active = "status-delivered";
+//     }
+//   },
+// };
 </script>
 
 <style scoped>
+.cancel-reason {
+  padding: 10px 15px;
+  background-color: #f8f9fa;
+  border-left: 4px solid #dc3545;
+  margin: 10px 0;
+}
+
+.cancel-reason-content {
+  display: flex;
+  align-items: center;
+  color: #dc3545;
+  font-size: 14px;
+}
+
+.cancel-reason-content i {
+  color: #dc3545;
+}
+
 .orders-container {
   padding: 2rem 0;
   background: none;
