@@ -63,10 +63,6 @@ async function ProductInBasket(product_id) {
     router.push("/login"); // и должно быть предуреждение о том, что пользователь незарегистророван
   }
 }
-
-onMounted(() => {
-  console.log(props.product);
-});
 // import { RouterLink } from "vue-router";
 
 // export default {

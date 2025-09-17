@@ -44,7 +44,7 @@
         <div class="cart-container p-4">
           <div class="d-flex justify-content-between align-items-center mb-4">
             <h3 class="mb-0">Товары в корзине</h3>
-            <span v-if="products.value" class="badge bg-primary"
+            <span v-if="products" class="badge bg-primary"
               >{{ products.data.totalCount }} товара</span
             >
           </div>
@@ -160,15 +160,15 @@ import BasketProduct from "../components/BasketProduct.vue";
 import Error from "../components/Error.vue";
 import { ref, onMounted, inject } from "vue";
 
-let userInfo = ref(null);
-let products = ref(null);
-let loader = ref(true);
-let activeError = ref(false);
-let activeSuccess = ref(false);
+const userInfo = ref(null);
+const products = ref(null);
+const loader = ref(true);
+const activeError = ref(false);
+const activeSuccess = ref(false);
 const activeToken = inject("activeToken");
 const apiUrl = inject("apiUrl");
-let title = ref("");
-let type = ref("error");
+const title = ref("");
+const type = ref("error");
 
 async function order() {
   const response = await fetch(`${apiUrl.value}api/order`, {

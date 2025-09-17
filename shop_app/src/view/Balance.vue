@@ -8,7 +8,7 @@
         v-if="message"
         type="success"
         :title="message"
-        @dismiss="this.message = ''"
+        @dismiss="message = ''"
       ></error>
     </div>
     <div class="row justify-content-center">
@@ -22,7 +22,9 @@
             </div>
             <div class="balance-info">
               <span class="balance-label">Текущий баланс</span>
-              <span class="balance-amount">{{ balance.toLocaleString() }} ₽</span>
+              <span v-if="balanceActive" class="balance-amount"
+                >{{ balanceActive.toLocaleString() }} ₽</span
+              >
             </div>
           </div>
 
@@ -64,6 +66,7 @@
             <!-- Правая часть - карта -->
             <div class="col-lg-6">
               <div class="card-section">
+                На ваш счёт поступило
                 <h4 class="card-title"><i class="fas fa-lock me-2"></i>Данные карты</h4>
 
                 <!-- Стилизованная карта -->
@@ -97,55 +100,114 @@
   </div>
 </template>
 
-<script>
-import Error from "../components/Error.vue";
+<script setup>
+import Error from "@/components/Error.vue";
+import { inject, ref, onMounted } from "vue";
 
-export default {
-  name: "BalanceTopUp",
-  data() {
-    return {
-      balance: null,
-      amount: 0,
-      message: "",
+const apiUrl = inject("apiUrl");
+const activeToken = inject("activeToken");
+
+const balanceActive = ref(null);
+const amount = ref(0);
+const message = ref("");
+
+async function handleSubmit() {
+  try {
+    const myHeaders = new Headers();
+    myHeaders.append("Content-Type", "application/json");
+    myHeaders.append("Authorization", `Bearer ${activeToken.value}`);
+    const raw = JSON.stringify({
+      balance: amount.value,
+    });
+
+    const requestOptions = {
+      method: "POST",
+      headers: myHeaders,
+      body: raw,
     };
-  },
-  methods: {
-    async handleSubmit() {
-      const raw = JSON.stringify({
-        balance: this.amount,
-      });
 
-      const response = await fetch(`${this.$config.apiUrl}api/put-balance`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${this.$config.activeToken}`,
-        },
-        body: raw,
-      });
-      if (response.ok) {
-        this.message = `На ваш счёт поступило ${this.amount}`;
-        this.balance += this.amount;
-        this.amount = 0;
-      }
-    },
-    async loadBalance() {
-      const response = await fetch(`${this.$config.apiUrl}api/balance`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${this.$config.activeToken}`,
-        },
-      });
-      this.balance = await response.json();
-      this.balance = this.balance.data.balance;
-    },
-  },
-  async created() {
-    await this.loadBalance();
-  },
-  components: { Error },
-};
+    const response = await fetch(`${apiUrl.value}api/put-balance`, requestOptions);
+
+    if (response.status > 199 && response.status < 300) {
+      message.value = `На ваш счёт поступило ${amount.value} нашей валюты`;
+      balanceActive.value += amount.value;
+      amount.value = 0;
+    }
+  } catch (e) {
+    console.log(e);
+  }
+}
+async function loadBalance() {
+  try {
+    const myHeaders = new Headers();
+
+    myHeaders.append("Content-Type", "application/json");
+    myHeaders.append("Authorization", `Bearer ${activeToken.value}`);
+
+    const requestOptions = {
+      method: "GET",
+      headers: myHeaders,
+    };
+    const response = await fetch(`${apiUrl.value}api/balance`, requestOptions);
+    if (response.status > 199 && response.status < 300) {
+      const balance = await response.json();
+      balanceActive.value = balance.data.balance;
+    }
+  } catch (e) {
+    console.log(e);
+  }
+}
+
+onMounted(async () => {
+  await loadBalance();
+});
+
+// export default {
+// name: "BalanceTopUp",
+// data() {
+//   return {
+//     balance: null,
+//     amount: 0,
+//     message: "",
+//   };
+// },
+// methods: {
+//   async handleSubmit() {
+//     const raw = JSON.stringify({
+//       balance: amount,
+//     });
+
+//     const response = await fetch(`${apiUrl.value}api/put-balance`, {
+//       method: "POST",
+//       headers: {
+//         "Content-Type": "application/json",
+//         Authorization: `Bearer ${activeToken.value}`,
+//       },
+//       body: raw,
+//     });
+//     if (response.ok) {
+//       message = `На ваш счёт поступило ${amount}`;
+//       balance += amount;
+//       amount = 0;
+//     }
+//   },
+//   async loadBalance() {
+//     const response = await fetch(`${apiUrl.value}api/balance`, {
+//       method: "GET",
+//       headers: {
+//         "Content-Type": "application/json",
+//         Authorization: `Bearer ${activeToken.value}`,
+//       },
+//     });
+//     balance = await response.json();
+//     balance = balance.data.balance;
+//   },
+// },
+// async created() {
+//   await loadBalance();
+// },
+// components: { Error },
+// };
 </script>
 
 <style scoped>

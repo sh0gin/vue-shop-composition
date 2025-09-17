@@ -97,49 +97,6 @@ async function beforeLoad() {
 onMounted(async () => {
   await beforeLoad();
 });
-// export default {
-//   methods: {
-//     async logout() {
-//       const myHeaders = new Headers();
-//       myHeaders.append("Content-Type", "application/json");
-//       myHeaders.append("Authorization", `Bearer ${this.$config.activeToken}`);
-//       const requestOptions = {
-//         method: "GET",
-//         headers: myHeaders,
-//         redirect: "follow",
-//       };
-
-//       await fetch(`${this.$config.apiUrl}api/logout`, requestOptions);
-//       this.$config.activeToken = null;
-//       this.$config.userStatus = null;
-//       localStorage.removeItem("token");
-//       this.$router.push("/login");
-//     },
-//     async beforeLoad() {
-//       this.$config.activeToken = localStorage.getItem("token");
-//       if (this.$config.activeToken) {
-//         const response = await fetch("http://web3-14-08-25.local/api/user/admin ", {
-//           method: "GET",
-//           headers: {
-//             "Content-Type": "application/json",
-//             Authorization: `Bearer ${this.$config.activeToken}`,
-//           },
-//         });
-//         let result = await response.json();
-//         if (result) {
-//           this.$config.userStatus = "admin";
-//         } else {
-//           this.$config.userStatus = "user";
-//         }
-//       } else {
-//         this.$config.userStatus = null;
-//       }
-//     },
-//   },
-//   async mounted() {
-//     await this.beforeLoad();
-//   },
-// };
 </script>
 
 <style>

@@ -106,11 +106,11 @@
 import { onMounted, ref, inject, reactive } from "vue";
 import { useRouter } from "vue-router";
 
-let firstName = ref("");
-let lastName = ref("");
-let email = ref("");
-let password = ref("");
-let errors = reactive({
+const firstName = ref("");
+const lastName = ref("");
+const email = ref("");
+const password = ref("");
+const errors = reactive({
   first_name_error: ref(""),
   last_name_error: ref(""),
   email_error: ref(""),
@@ -161,75 +161,6 @@ async function registation() {
 onMounted(() => {
   setUserStatus(localStorage.getItem("token"));
 });
-
-// export default {
-//   data() {
-//     return {
-//       firstName: "",
-//       lastName: "",
-//       email: "",
-//       password: "",
-//       first_name_error: "",
-//       last_name_error: "",
-//       email_error: "",
-//       email_error: "",
-//     };
-//   },
-//   methods: {
-//     async registation() {
-//       const myHeaders = new Headers();
-//       myHeaders.append("Content-Type", "application/json");
-
-//       const raw = JSON.stringify({
-//         email: this.email,
-//         password: this.password,
-//         first_name: this.firstName,
-//         last_name: this.lastName,
-//       });
-
-//       const requestOptions = {
-//         method: "POST",
-//         headers: myHeaders,
-//         body: raw,
-//         redirect: "follow",
-//       };
-
-//       let result = await fetch(`${this.$config.apiUrl}api/register`, requestOptions);
-//       result = await result.json();
-//       if ("data" in result) {
-//         if (result.data.code == 200) {
-//           this.$router.push("/login");
-//         }
-//       } else {
-//         if ("error" in result) {
-//           // if ("password" in result.error.error) {
-//           //   this.password_error = result.error.error["password"][0];
-//           // }
-//           // if ("email" in result.error.error) {
-//           //   this.email_error = result.error.error["email"][0];
-//           // }
-//           // if ("first_name" in result.error.error) {
-//           //   this.firstName_error = result.error.error["first_name"][0];
-//           // }
-//           // if ("last_name" in result.error.error) {
-//           //   this.lastName_error = result.error.error["last_name"][0];
-//           // }
-//           // Object.keys(result.error.error).forEach(function (key_word) {
-//           //     console.log(123)
-//           //     // console.log(this[key_word + "_error"]);
-//           //     // this.key_word = result.error.error[key_word][0]
-//           // })
-//           Object.keys(result.error.error).forEach(
-//             (key_word) => (this[`${key_word}_error`] = result.error.error[key_word][0])
-//           );
-//         }
-//       }
-//     },
-//   },
-//   beforeCreate() {
-//     this.$config.activeToken = localStorage.getItem("token");
-//   },
-// };
 </script>
 
 <style scoped>

@@ -13,12 +13,15 @@
   </div>
 </template>
 
-<script>
-export default {
-  props: ["product"],
-  //   mounted() {
-  //   },
-};
+<script setup>
+const props = defineProps({
+  product: Object,
+});
+
+// export default {
+//   props: ["product"],
+
+// };
 </script>
 
 <style>

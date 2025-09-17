@@ -99,60 +99,55 @@ let errors = reactive({
 // let email_error = ref(null);
 // let password_error = ref(null);
 let showPassword = ref(true);
-const setActiveToken = inject("setActiveToken");
-const setUserStatus = inject("setUserStatus");
+const userStatus = inject("userStatus");
+const activeToken = inject("activeToken");
 const apiUrl = inject("apiUrl");
 const router = useRouter();
 
 async function login() {
-  errors.password_error = null;
-  errors.email_error = null;
+  try {
+    errors.password_error = null;
+    errors.email_error = null;
 
-  const raw = JSON.stringify({
-    email: email.value,
-    password: password.value,
-  });
+    const myHeaders = new Headers();
+    myHeaders.append("Content-Type", "application/json");
 
-  const myHeaders = new Headers();
-  myHeaders.append("Content-Type", "application/json");
+    const raw = JSON.stringify({
+      email: email.value,
+      password: password.value,
+    });
 
-  const requestOptions = {
-    method: "POST",
-    headers: myHeaders,
-    body: raw,
-    redirect: "follow",
-  };
-
-  let response = await fetch(`${apiUrl.value}api/login`, requestOptions);
-
-  let result = await response.json();
-  if (result?.data?.code == 200) {
-    errors.email_error = "";
-    errors.password_error = "";
-    localStorage.setItem("token", result.data.token);
-    setActiveToken(result.data.token);
-    setUserStatus(result.data.user.role);
-    router.push("/products");
-  } else {
-    if ("error" in result) {
-      Object.keys(result.error.error).forEach(
-        // переделит в целом под composition
-        (key_word) => (errors[`${key_word}_error`] = result.error.error[key_word][0])
-      );
-    } else {
-      password_error = "Ошибка в логине или пароле";
+    const requestOptions = {
+      method: "POST",
+      headers: myHeaders,
+      body: raw,
+      redirect: "follow",
+    };
+    const response = await fetch(`${apiUrl.value}api/login`, requestOptions);
+    const result = await response.json();
+    if (response.status > 199 && response.status < 300) {
+      // errors.email_error = "";
+      // errors.password_error = "";
+      localStorage.setItem("token", result.data.token);
+      activeToken.value = result.data.token;
+      userStatus.value = result.data.user.role;
+      router.push("/products");
+      // setActiveToken(result.data.token);
     }
+    if (response.status == 422) {
+      if ("error" in result) {
+        Object.keys(result.error.error).forEach(
+          // переделит в целом под composition
+          (key_word) => (errors[`${key_word}_error`] = result.error.error[key_word][0])
+        );
+      } else {
+        password_error = "Ошибка в логине или пароле";
+      }
+    }
+  } catch (e) {
+    console.log(e);
   }
 }
-
-// return {
-//   email,
-//   password,
-//   email_error,
-//   password_error,
-//   showPassword,
-//   login,
-// };
 </script>
 
 <style>

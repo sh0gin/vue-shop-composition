@@ -1,5 +1,5 @@
 <template>
-  <div class="error-container" :class="[type, { dismissible }]">
+  <div class="error-container" :class="[props.type]">
     <div class="error-content">
       <div class="error-icon">
         <slot name="icon">
@@ -8,17 +8,17 @@
       </div>
 
       <div class="error-details">
-        <h3 v-if="title" class="error-title">{{ title }}</h3>
-        <p class="error-message">{{ message }}</p>
+        <h3 v-if="props.title" class="error-title">{{ props.title }}</h3>
+        <p class="error-message">{{ props.message }}</p>
 
-        <div v-if="$slots.default" class="error-actions">
+        <!-- <div v-if="$slots.default" class="error-actions">
           <slot></slot>
-        </div>
+        </div> -->
       </div>
 
       <button
-        v-if="dismissible"
-        @click="$emit('dismiss')"
+        v-if="props.dismissible"
+        @click="emit('dismiss')"
         class="error-close"
         aria-label="Закрыть"
       >
@@ -28,44 +28,43 @@
   </div>
 </template>
 
-<script>
-export default {
-  name: "ErrorDisplay",
-  props: {
-    title: {
-      type: String,
-      default: "",
-    },
-    message: {
-      type: String,
-      required: true,
-    },
-    type: {
-      type: String,
-      default: "error",
-      validator: (value) => ["error", "warning", "info", "success"].includes(value),
-    },
-    dismissible: {
-      type: Boolean,
-      default: true,
-    },
+<script setup>
+import { computed } from "vue";
+const props = defineProps({
+  title: {
+    type: String,
+    default: "",
   },
-  computed: {
-    iconSvg() {
-      const icons = {
-        error: "❌",
-        warning: "⚠️",
-        info: "ℹ️",
-        success: "✅",
-      };
-      return icons[this.type] || icons.error;
-    },
-    closeSvg() {
-      return "×";
-    },
+  message: {
+    type: String,
+    required: true,
   },
-  emits: ["dismiss"],
-};
+  type: {
+    type: String,
+    default: "error",
+    validator: (value) => ["error", "warning", "info", "success"].includes(value),
+  },
+  dismissible: {
+    type: Boolean,
+    default: true,
+  },
+});
+
+const emit = defineEmits(["dismiss"]);
+
+let iconSvg = computed(() => {
+  const icons = {
+    error: "❌",
+    warning: "⚠️",
+    info: "ℹ️",
+    success: "✅",
+  };
+  return icons[props.type] || icons.error;
+});
+
+const closeSvg = computed(() => {
+  return "×";
+});
 </script>
 
 <style scoped>
@@ -162,6 +161,7 @@ export default {
     opacity: 0;
     transform: translateY(-10px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);

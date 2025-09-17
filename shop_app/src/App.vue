@@ -11,8 +11,8 @@
 import { provide, ref } from "vue";
 import HeaderOrigin from "@/components/HeaderOrigin.vue";
 
-let activeToken = ref(null);
-let userStatus = ref(null);
+const activeToken = ref(null);
+const userStatus = ref(null);
 
 const setActiveToken = (newToken) => {
   activeToken.value = newToken;

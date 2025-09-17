@@ -57,7 +57,7 @@
 <script setup>
 import { ref, onMounted } from "vue";
 import CartProductOrder from "@/components/CartProductOrder.vue";
-let status_active = ref("");
+const status_active = ref("");
 const props = defineProps({
   code: String,
   id: Number,
@@ -77,7 +77,6 @@ onMounted(() => {
   } else if (props.status == "Отменён") {
     status_active.value = "status-cancelled";
   }
-  console.log(props.status, status_active.value, props.code);
 });
 
 // export default {

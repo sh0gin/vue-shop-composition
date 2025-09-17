@@ -57,10 +57,10 @@ import Pagination from "@/components/Pagination.vue";
 
 import { ref, onMounted, inject } from "vue";
 
-let filteredProducts = ref(null);
-let countGeneral = ref(null);
+const filteredProducts = ref(null);
+const countGeneral = ref(null);
 const apiUrl = inject("apiUrl");
-let setActiveToken = inject("setActiveToken");
+const setActiveToken = inject("setActiveToken");
 
 async function loadProducts(page = 1) {
   let count = 4; // Здесь меняется количество вывода на странницу продуктов за раз
@@ -76,7 +76,7 @@ async function loadProducts(page = 1) {
     body: raw,
   });
   if (response.ok) {
-    let result = await response.json();
+    const result = await response.json();
     // this.filteredProducts = this.filteredProducts.data;
     // this.totalCount = this.filteredProducts.data.totalCount;
     filteredProducts.value = result.data.products;
@@ -88,16 +88,6 @@ onMounted(() => {
   setActiveToken(localStorage.getItem("token"));
   loadProducts();
 });
-// beforeCreate() {
-//   this.$config.activeToken = localStorage.getItem("token");
-// },
-// created() {
-//   this.loadProducts();
-// },
-// components: {
-//   Pagination,
-//   CardProduct,
-// },
 </script>
 
 <style>

@@ -101,52 +101,122 @@
   </div>
 </template>
 
-<script>
+<script setup>
 import CartAdminOrder from "@/components/CartAdminOrder.vue";
-export default {
-  data() {
-    return {
-      orders: [],
-      status: null,
-      loader: true,
-      active: 0,
-    };
-  },
-  methods: {
-    handler() {
-      this.status.handled++;
-      this.status.non_handled--;
-    },
-    back() {
-      this.status.handled--;
-      this.status.non_handled++;
-    },
-    async loadData(number) {
-      this.orders = [];
-      this.active = number;
-      const response = await fetch(
-        `${this.$config.apiUrl}api/order/get-all-order/${number}`,
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${this.$config.activeToken}`,
-          },
-        }
-      );
-      this.active = number;
-      let result = await response.json();
-      this.orders = result.data;
-      this.loader = false;
-      this.status = result.status;
-    },
-  },
-  async mounted() {
-    await this.loadData(0);
-  },
+import { inject, ref, onMounted } from "vue";
+import { useRouter } from "vue-router";
 
-  components: { CartAdminOrder },
+const userRouter = useRouter();
+const apiUrl = inject("apiUrl");
+const activeToken = inject("activeToken");
+
+const orders = ref([]);
+const status = ref(null);
+const loader = ref(true);
+const active = ref(0);
+
+const router = function handler() {
+  status.value.handled++;
+  status.value.non_handled--;
 };
+function back() {
+  status.value.handled--;
+  status.value.non_handled++;
+}
+async function loadData(number) {
+  try {
+    orders.value = [];
+    active.value = number;
+
+    const myHeaders = new Headers();
+    myHeaders.append("Content-Type", "application/json");
+
+    const requestOptions = {
+      methods: "GET",
+      headers: myHeaders,
+    };
+
+    const response = await fetch(
+      `${apiUrl.value}api/order/get-all-order/${number}`,
+      requestOptions
+    );
+    if (response.status > 199 && response.status < 300) {
+      const result = await response.json();
+
+      orders.value = result.data;
+      status.value = result.status;
+      loader.value = false;
+    }
+    if (response.status == 401) {
+      userRouter.push("er");
+    }
+  } catch (e) {
+    console.log(e);
+  }
+}
+
+onMounted(async () => {
+  await loadData(0);
+});
+
+// const methods = computed({
+//   get() {
+//     return this._methods;
+//   },
+//   set(value) {
+//     this._methods = value;
+//   },
+// });
+
+// export default {
+//   data() {
+//     return {
+//       orders: [],
+//       status: null,
+//       loader: true,
+//       active: 0,
+//     };
+//   },
+//   _methods: {
+//     handler() {
+//       this.status.handled++;
+//       this.status.non_handled--;
+//     },
+//     back() {
+//       this.status.handled--;
+//       this.status.non_handled++;
+//     },
+//     async loadData(number) {
+//       this.orders = [];
+//       this.active = number;
+//       const response = await fetch(
+//         `${this.$config.apiUrl}api/order/get-all-order/${number}`,
+//         {
+//           method: "GET",
+//           headers: {
+//             "Content-Type": "application/json",
+//             Authorization: `Bearer ${this.$config.activeToken}`,
+//           },
+//         }
+//       );
+//       this.active = number;
+//       let result = await response.json();
+//       this.orders = result.data;
+//       this.loader = false;
+//       this.status = result.status;
+//     },
+//   },
+//   get methods() {
+//     return this._methods;
+//   },
+//   set methods(value) {
+//     this._methods = value;
+//   },
+//   async mounted() {
+//     await this.loadData(0);
+//   },
+
+//   components: { CartAdminOrder },
 </script>
 
 <style>

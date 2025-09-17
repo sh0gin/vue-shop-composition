@@ -9,7 +9,12 @@
         <i class="fas fa-clock me-1"></i>{{ object.status }}
       </div>
     </div>
-
+    <error
+      v-if="messageError"
+      type="error"
+      :title="messageError"
+      @dismiss="messageError = ''"
+    ></error>
     <div v-for="product in object.products">
       <CartProductForAdmin :product="product"></CartProductForAdmin>
     </div>
@@ -52,62 +57,72 @@
   </div>
 </template>
 
-<script>
+<script setup>
 import CartProductForAdmin from "@/components/CartProductForAdmin.vue";
+import Error from "@/components/Error.vue";
+import { inject, ref, onMounted } from "vue";
 
-export default {
-  data() {
-    return {
-      status_active: "status-cancelled",
-      choise: "ready",
-      message: "",
-    };
-  },
-  props: ["object"],
-  methods: {
-    async change_status(id) {
-      const raw = JSON.stringify({
-        action: this.choise,
-        text: this.message,
-      });
+const props = defineProps({
+  object: Object,
+});
 
-      const response = await fetch(`${this.$config.apiUrl}api/change-status/${id}`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${this.$config.activeToken}`,
-        },
-        body: raw,
-      });
-      if (response.ok) {
-        if (this.choise == "ready") {
-          this.object.status = "Готов к получению";
-          this.status_active = "status-delivered";
-          this.$emit("handler");
-        } else if (this.choise == "cancelled") {
-          this.object.status = "Отменён";
-          this.status_active = "status-cancelled";
-          this.$emit("handler");
-        } else {
-          this.object.status = "Заказ в обработке";
-          this.status_active = "status-processing";
-          this.$emit("back");
+const emit = defineEmits(["handler", "back"]);
+
+const apiUrl = inject("apiUrl");
+const activeToken = inject("activeToken");
+
+const status_active = ref("status-cancelled");
+const choise = ref("ready");
+const message = ref("");
+const messageError = ref("");
+
+async function change_status(id) {
+  if (props.object.status == "Отменён" && choise.value == "cancelled") {
+    messageError.value = "Заказ уже отмёнён.";
+  } else {
+    const raw = JSON.stringify({
+      action: choise.value,
+      text: message.value,
+    });
+    const response = await fetch(`${apiUrl.value}api/change-status/${id}`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${activeToken.value}`,
+      },
+      body: raw,
+    });
+    if (response.ok) {
+      if (choise.value == "ready") {
+        if (props.object.status == "Заказ в обработке") {
+          emit("handler");
         }
+        props.object.status = "Готов к получению";
+        status_active.value = "status-delivered";
+      } else if (choise.value == "cancelled") {
+        if (props.object.status == "Заказ в обработке") {
+          emit("handler");
+        }
+        props.object.status = "Отменён";
+        status_active.value = "status-cancelled";
+      } else {
+        props.object.status = "Заказ в обработке";
+        status_active.value = "status-processing";
+        emit("back");
       }
-    },
-  },
-  mounted() {
-    if (this.object.status == "Отмена") {
-      this.status_active = "status-cancelled";
-    } else if (this.object.status == "Заказ в обработке") {
-      this.status_active = "status-processing";
-    } else if (this.object.status == "Готов к получению") {
-      this.status_active = "status-delivered";
     }
-    // console.log(this.object.status);
-  },
-  components: { CartProductForAdmin },
-};
+  }
+}
+
+onMounted(() => {
+  if (props.object.status == "Отмена") {
+    status_active.value = "status-cancelled";
+  } else if (props.object.status == "Заказ в обработке") {
+    status_active.value = "status-processing";
+  } else if (props.object.status == "Готов к получению") {
+    status_active.value = "status-delivered";
+  }
+});
 </script>
 
 <style>

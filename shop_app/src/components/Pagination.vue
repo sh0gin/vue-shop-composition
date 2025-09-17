@@ -68,7 +68,7 @@ const props = defineProps({
 
 const emit = defineEmits(["active_page"]);
 
-let active = ref(1);
+const active = ref(1);
 
 function page(active_page) {
   active.value = active_page;

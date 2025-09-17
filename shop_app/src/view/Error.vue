@@ -23,9 +23,6 @@
                   <i class="bi bi-house-door me-2 my-conf"></i>На главную
                 </button>
               </router-link>
-              <!-- <button class="btn btn-outline-secondary">
-                <i class="bi bi-arrow-left me-2"></i>Вернуться назад
-              </button> -->
             </div>
 
             <div class="useful-links">
@@ -35,31 +32,31 @@
                   >Товары</router-link
                 >
                 <router-link
-                  v-if="this.$config.activeToken"
+                  v-if="activeToken"
                   to="/basket"
                   class="btn btn-sm btn-outline-primary m-1"
                   >Корзина</router-link
                 >
                 <router-link
-                  v-if="this.$config.activeToken"
+                  v-if="activeToken"
                   to="/order"
                   class="btn btn-sm btn-outline-primary m-1"
                   >Заказы</router-link
                 >
                 <router-link
-                  v-if="this.$config.activeToken"
+                  v-if="activeToken"
                   to="/balance"
                   class="btn btn-sm btn-outline-primary m-1"
                   >Баланс</router-link
                 >
                 <router-link
-                  v-if="!this.$config.activeToken"
+                  v-if="!activeToken"
                   to="/rigester"
                   class="btn btn-sm btn-outline-primary m-1"
                   >Регистрация</router-link
                 >
                 <router-link
-                  v-if="!this.$config.activeToken"
+                  v-if="!activeToken"
                   to="/login"
                   class="btn btn-sm btn-outline-primary m-1"
                   >Вход</router-link
@@ -72,10 +69,9 @@
     </div>
   </div>
 </template>
-<script>
-export default {
-  data() {},
-};
+<script setup>
+import { inject } from "vue";
+const activeToken = inject("activeToken");
 </script>
 
 <style>

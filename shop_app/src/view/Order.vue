@@ -168,10 +168,10 @@ import { inject, ref, onMounted } from "vue";
 const apiUrl = inject("apiUrl");
 const activeToken = inject("activeToken");
 
-let order = ref(false);
-let loader = ref(false);
-let status = ref(false);
-let active = ref(4);
+const order = ref(false);
+const loader = ref(false);
+const status = ref(false);
+const active = ref(4);
 
 async function load(status_active) {
   order.value = [];

@@ -44,7 +44,7 @@ const props = defineProps({
   product: Object,
 });
 const emit = defineEmits(["minus", "plus", "error"]);
-let active = ref(false);
+const active = ref(false);
 
 async function minus(product_id) {
   const response = await fetch(
